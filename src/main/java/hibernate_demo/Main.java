@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) {
         EntityDao dao = new EntityDao();
-
+        StudentDao studentDao = new StudentDao();
 
         String komenda;
         do {
@@ -24,11 +24,11 @@ public class Main {
                 dodajStudenta(dao);
             } else if (komenda.equalsIgnoreCase("dodajG")) {
                 dodajGrade(dao);
-            } else if (komenda.equalsIgnoreCase("listujS")) {
+            } else if (komenda.equalsIgnoreCase("listS")) {
 
                 System.out.println();
                 dao.getAll(Student.class).forEach(System.out::println);
-            } else if (komenda.equalsIgnoreCase("listujG")) {
+            } else if (komenda.equalsIgnoreCase("listG")) {
 
                 System.out.println();
                 dao.getAll(Grade.class).forEach(System.out::println);
@@ -40,6 +40,7 @@ public class Main {
 
     private static void dodajStudenta(EntityDao dao) {
         Student student = new Student();
+
         System.out.println("Podaj imie:");
         student.setName(scanner.nextLine());
         System.out.println("Podaj wiek:");
@@ -48,15 +49,31 @@ public class Main {
         student.setAverage(Double.valueOf(scanner.nextLine()));
         System.out.println("Podaj czy zyje:");
         student.setAlive(Boolean.parseBoolean(scanner.nextLine()));
+
         dao.saveOrUpdate(student);
     }
 
     private static void dodajGrade(EntityDao dao) {
-        Grade grade = new Grade();
-        System.out.println("Podaj przedmiot:");
-        grade.setSubject(GradeSubject.valueOf(scanner.nextLine()));
-        System.out.println("Podaj ocene:");
-        grade.setValue(Double.parseDouble(scanner.nextLine()));
-        dao.saveOrUpdate(grade);
+        // Na początek pobieramy studenta. Jeśli uda się go znaleźć, to przechodzimy do oceny
+        System.out.println("Podaj id studenta:");
+        Long idStudent = Long.valueOf(scanner.nextLine());
+        Optional<Student> studentOptional = dao.getById(Student.class, idStudent);
+
+        if (studentOptional.isPresent()) {
+            Student student = studentOptional.get();
+
+            Grade grade = new Grade();
+            grade.setStudent(student);
+            System.out.println("Podaj przedmiot:");
+            grade.setSubject(GradeSubject.valueOf(scanner.nextLine()));
+            System.out.println("Podaj ocene:");
+            grade.setValue(Double.parseDouble(scanner.nextLine()));
+
+            dao.saveOrUpdate(grade);
+
+//            w pełni opcjonalne
+            student.getGradeList().add(grade);
+            dao.saveOrUpdate(student);
+        }
     }
 }

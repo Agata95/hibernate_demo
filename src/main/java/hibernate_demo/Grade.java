@@ -27,6 +27,8 @@ public class Grade implements IBaseEntity {
 
     private double value;
 
+    // "nullable = false" == "not null"
+
     @ToString.Exclude
     @ManyToOne()
     private Student student;
